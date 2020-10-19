@@ -126,7 +126,10 @@ class GenericMask:
         has_holes = (hierarchy.reshape(-1, 4)[:, 3] >= 0).sum() > 0
         res = res[-2]
         res = [x.flatten() for x in res]
-        res = [x for x in res if len(x) >= 6]
+        # These coordinates from OpenCV are integers in range [0, W-1 or H-1].
+        # We add 0.5 to turn them into real-value coordinate space. A better solution
+        # would be to first +0.5 and then dilate the returned polygon by 0.5.
+        res = [x + 0.5 for x in res if len(x) >= 6]
         return res, has_holes
 
     def polygons_to_mask(self, polygons):
@@ -550,6 +553,20 @@ class Visualizer:
                 sem_seg = np.asarray(sem_seg, dtype="uint8")
         if sem_seg is not None:
             self.draw_sem_seg(sem_seg, area_threshold=0, alpha=0.5)
+
+        pan_seg = dic.get("pan_seg", None)
+        if pan_seg is None and "pan_seg_file_name" in dic:
+            assert "segments_info" in dic
+            with PathManager.open(dic["pan_seg_file_name"], "rb") as f:
+                pan_seg = Image.open(f)
+                pan_seg = np.asarray(pan_seg)
+                from panopticapi.utils import rgb2id
+
+                pan_seg = rgb2id(pan_seg)
+            segments_info = dic["segments_info"]
+        if pan_seg is not None:
+            pan_seg = torch.Tensor(pan_seg)
+            self.draw_panoptic_seg_predictions(pan_seg, segments_info, area_threshold=0, alpha=0.5)
         return self.output
 
     def overlay_instances(
