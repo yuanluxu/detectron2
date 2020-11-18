@@ -1,4 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates.
 import contextlib
 import io
 import logging
@@ -6,11 +6,11 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional
-from fvcore.common.file_io import PathManager
 from fvcore.common.timer import Timer
 
 from detectron2.data import DatasetCatalog, MetadataCatalog
 from detectron2.structures import BoxMode
+from detectron2.utils.file_io import PathManager
 
 from ..utils import maybe_prepend_base_path
 
@@ -82,6 +82,16 @@ DATASETS = [
         name="posetrack2017_val",
         images_root="posetrack2017/posetrack_data_2017",
         annotations_fpath="posetrack2017/densepose_posetrack_val2017.json",
+    ),
+    CocoDatasetInfo(
+        name="lvis_v05_train",
+        images_root="coco/train2017",
+        annotations_fpath="lvis/lvis_v0.5_plus_dp_train.json",
+    ),
+    CocoDatasetInfo(
+        name="lvis_v05_val",
+        images_root="coco/val2017",
+        annotations_fpath="lvis/lvis_v0.5_plus_dp_val.json",
     ),
 ]
 

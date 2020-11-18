@@ -1,4 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates.
 import logging
 import unittest
 import torch
@@ -102,7 +102,7 @@ class FastRCNNTest(unittest.TestCase):
         for name in expected_losses.keys():
             assert torch.allclose(losses[name], expected_losses[name])
 
-    @unittest.skipIf(TORCH_VERSION < (1, 6), "Insufficient pytorch version")
+    @unittest.skipIf(TORCH_VERSION < (1, 8), "Insufficient pytorch version")
     def test_predict_boxes_tracing(self):
         class Model(torch.nn.Module):
             def __init__(self, output_layer):

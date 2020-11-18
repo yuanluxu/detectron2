@@ -1,4 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Facebook, Inc. and its affiliates.
 import colorsys
 import logging
 import math
@@ -10,12 +10,12 @@ import matplotlib.colors as mplc
 import matplotlib.figure as mplfigure
 import pycocotools.mask as mask_util
 import torch
-from fvcore.common.file_io import PathManager
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from PIL import Image
 
 from detectron2.data import MetadataCatalog
 from detectron2.structures import BitMasks, Boxes, BoxMode, Keypoints, PolygonMasks, RotatedBoxes
+from detectron2.utils.file_io import PathManager
 
 from .colormap import random_color
 
@@ -527,7 +527,12 @@ class Visualizer:
             else:
                 keypts = None
 
-            boxes = [BoxMode.convert(x["bbox"], x["bbox_mode"], BoxMode.XYXY_ABS) for x in annos]
+            boxes = [
+                BoxMode.convert(x["bbox"], x["bbox_mode"], BoxMode.XYXY_ABS)
+                if len(x["bbox"]) == 4
+                else x["bbox"]
+                for x in annos
+            ]
 
             labels = [x["category_id"] for x in annos]
             colors = None
