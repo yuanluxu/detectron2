@@ -1,6 +1,5 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 
-import importlib.util
 import os
 import sys
 import tempfile
@@ -13,6 +12,7 @@ from torch import nn
 # need some explicit imports due to https://github.com/pytorch/pytorch/issues/38964
 import detectron2  # noqa F401
 from detectron2.structures import Instances
+from detectron2.utils.env import _import_file
 
 _counter = 0
 
@@ -265,14 +265,9 @@ from detectron2.structures import Boxes, Instances
 
 
 def _import(path):
-    # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
-    spec = importlib.util.spec_from_file_location(
-        "{}{}".format(sys.modules[__name__].__name__, _counter), path
+    return _import_file(
+        "{}{}".format(sys.modules[__name__].__name__, _counter), path, make_importable=True
     )
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module.__name__] = module
-    spec.loader.exec_module(module)
-    return module
 
 
 # TODO: this is a private utility. Should be made more useful through a model export api.
@@ -316,8 +311,6 @@ def patch_nonscriptable_classes():
     # we change backbone to use ModuleList for scripting.
     # (note: this changes param names in state_dict)
 
-    # TODO: __prepare_scriptable__ was reverted from pytorch: D25061862
-    # We hack it here until it's added back
     def prepare_resnet(self):
         ret = deepcopy(self)
         ret.stages = nn.ModuleList(ret.stages)
@@ -325,7 +318,7 @@ def patch_nonscriptable_classes():
             delattr(ret, k)
         return ret
 
-    ResNet.__tmp_prepare_scriptable__ = prepare_resnet
+    ResNet.__prepare_scriptable__ = prepare_resnet
 
     def prepare_fpn(self):
         ret = deepcopy(self)
@@ -336,7 +329,7 @@ def patch_nonscriptable_classes():
                 delattr(ret, name)
         return ret
 
-    FPN.__tmp_prepare_scriptable__ = prepare_fpn
+    FPN.__prepare_scriptable__ = prepare_fpn
 
     # Annotate some attributes to be constants for the purpose of scripting,
     # even though they are not constants in eager mode.
